@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bre's Cookies — Painel</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- ── LOGIN ─────────────────────────────────── -->
+  <div id="tela-login">
+    <div class="login-card">
+      <div class="logo">🍪</div>
+      <h1>Bre's Cookies</h1>
+      <p class="subtitulo">Painel de gestão</p>
+
+      <form id="form-login" autocomplete="off">
+        <div class="campo">
+          <label for="email">E-mail</label>
+          <input type="email" id="email" placeholder="seu@email.com" required>
+        </div>
+        <div class="campo">
+          <label for="senha">Senha</label>
+          <input type="password" id="senha" placeholder="••••••••" required>
+        </div>
+        <button type="submit" class="btn-login" id="btn-entrar">Entrar</button>
+        <p class="erro-login" id="msg-erro"></p>
+      </form>
+    </div>
+  </div>
+
+  <!-- ── DASHBOARD ──────────────────────────────── -->
+  <div id="tela-dashboard">
+
+    <header class="topbar">
+      <div class="marca">
+        <span>🍪</span> Bre's Cookies
+      </div>
+      <button class="btn-sair" id="btn-sair">Sair</button>
+    </header>
+
+    <div class="conteudo">
+
+      <!-- MÉTRICAS DO DIA -->
+      <p class="secao-titulo">Hoje</p>
+      <div class="grid-metricas">
+        <div class="card-metrica">
+          <div class="label">Unidades vendidas</div>
+          <div class="valor" id="dia-unidades">—</div>
+          <div class="detalhe" id="dia-data"></div>
+        </div>
+        <div class="card-metrica">
+          <div class="label">Faturamento do dia</div>
+          <div class="valor" id="dia-faturamento">—</div>
+        </div>
+        <div class="card-metrica">
+          <div class="label">Sabores vendidos</div>
+          <div class="valor" id="dia-sabores">—</div>
+        </div>
+      </div>
+
+      <!-- MÉTRICAS DO MÊS -->
+      <p class="secao-titulo">Este mês</p>
+      <div class="grid-metricas">
+        <div class="card-metrica">
+          <div class="label">Unidades vendidas</div>
+          <div class="valor" id="mes-unidades">—</div>
+          <div class="detalhe" id="mes-periodo"></div>
+        </div>
+        <div class="card-metrica">
+          <div class="label">Faturamento</div>
+          <div class="valor" id="mes-faturamento">—</div>
+        </div>
+        <div class="card-metrica">
+          <div class="label">Ticket médio por venda</div>
+          <div class="valor" id="mes-ticket">—</div>
+        </div>
+      </div>
+
+      <!-- RANKING DE SABORES -->
+      <p class="secao-titulo">Ranking do mês — sabores mais vendidos</p>
+      <div class="card-tabela">
+        <ul class="lista-ranking" id="lista-ranking">
+          <li class="vazio loading">Carregando...</li>
+        </ul>
+      </div>
+
+      <!-- ÚLTIMAS VENDAS -->
+      <p class="secao-titulo">Últimas vendas registradas</p>
+      <div class="card-tabela">
+        <table>
+          <thead>
+            <tr>
+              <th>Data</th>
+              <th>Sabor</th>
+              <th>Qtd</th>
+              <th>Preço unit.</th>
+              <th>Total</th>
+            </tr>
+          </thead>
+          <tbody id="tabela-vendas">
+            <tr><td colspan="5" class="vazio loading">Carregando...</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- CUSTO POR SABOR -->
+      <p class="secao-titulo">Custo de produção por sabor</p>
+      <div class="card-tabela">
+        <table>
+          <thead>
+            <tr>
+              <th>Sabor</th>
+              <th>Custo/fornada</th>
+              <th>Qtd produzida</th>
+              <th>Custo/unidade</th>
+              <th>Calculado em</th>
+            </tr>
+          </thead>
+          <tbody id="tabela-custos">
+            <tr><td colspan="5" class="vazio loading">Carregando...</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="app.js"></script>
+</body>
+</html>
