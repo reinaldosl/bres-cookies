@@ -33,116 +33,198 @@
   <!-- ── DASHBOARD ──────────────────────────────── -->
   <div id="tela-dashboard">
 
-    <header class="topbar">
-      <div class="marca">
-        <span>🍪</span> Bre's Cookies
-      </div>
-      <button class="btn-sair" id="btn-sair">Sair</button>
-    </header>
+    <!-- SIDEBAR -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-marca">🍪 Bre's Cookies</div>
+      <nav class="sidebar-nav">
+        <button class="sidebar-item ativo" data-pagina="painel">
+          <span class="sidebar-icone">📊</span>
+          <span>Painel</span>
+        </button>
+        <button class="sidebar-item" data-pagina="compras">
+          <span class="sidebar-icone">🛒</span>
+          <span>Compras de Estoque</span>
+        </button>
+      </nav>
+    </aside>
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
 
-    <div class="conteudo">
+    <!-- ÁREA PRINCIPAL -->
+    <div class="main-area">
 
-      <!-- MÉTRICAS DO DIA -->
-      <p class="secao-titulo">Hoje</p>
-      <div class="grid-metricas">
-        <div class="card-metrica">
-          <div class="label">Unidades vendidas</div>
-          <div class="valor" id="dia-unidades">—</div>
-          <div class="detalhe" id="dia-data"></div>
-        </div>
-        <div class="card-metrica">
-          <div class="label">Faturamento do dia</div>
-          <div class="valor" id="dia-faturamento">—</div>
-        </div>
-        <div class="card-metrica">
-          <div class="label">Sabores vendidos</div>
-          <div class="valor" id="dia-sabores">—</div>
-        </div>
-      </div>
+      <header class="topbar">
+        <button class="btn-menu" id="btn-menu">☰</button>
+        <span class="topbar-titulo" id="topbar-titulo">Painel</span>
+        <button class="btn-sair" id="btn-sair">Sair</button>
+      </header>
 
-      <!-- MÉTRICAS DO MÊS -->
-      <p class="secao-titulo">Este mês</p>
-      <div class="grid-metricas">
-        <div class="card-metrica">
-          <div class="label">Unidades vendidas</div>
-          <div class="valor" id="mes-unidades">—</div>
-          <div class="detalhe" id="mes-periodo"></div>
-        </div>
-        <div class="card-metrica">
-          <div class="label">Faturamento</div>
-          <div class="valor" id="mes-faturamento">—</div>
-        </div>
-        <div class="card-metrica">
-          <div class="label">Ticket médio por venda</div>
-          <div class="valor" id="mes-ticket">—</div>
-        </div>
-      </div>
+      <!-- PÁGINA: PAINEL -->
+      <div class="conteudo" id="pagina-painel">
 
-      <!-- RANKING DE SABORES -->
-      <p class="secao-titulo">Ranking do mês — sabores mais vendidos</p>
-      <div class="card-tabela">
-        <ul class="lista-ranking" id="lista-ranking">
-          <li class="vazio loading">Carregando...</li>
-        </ul>
-      </div>
-
-      <!-- FILTRO DE DATAS -->
-      <p class="secao-titulo" id="titulo-vendas">Últimas vendas registradas</p>
-      <div class="card-filtro">
-        <div class="filtro-linha">
-          <div class="filtro-campo">
-            <label for="filtro-de">De</label>
-            <input type="date" id="filtro-de">
+        <p class="secao-titulo">Hoje</p>
+        <div class="grid-metricas">
+          <div class="card-metrica">
+            <div class="label">Unidades vendidas</div>
+            <div class="valor" id="dia-unidades">—</div>
+            <div class="detalhe" id="dia-data"></div>
           </div>
-          <div class="filtro-campo">
-            <label for="filtro-ate">Até</label>
-            <input type="date" id="filtro-ate">
+          <div class="card-metrica">
+            <div class="label">Faturamento do dia</div>
+            <div class="valor" id="dia-faturamento">—</div>
           </div>
-          <button class="btn-filtrar" id="btn-filtrar">Filtrar</button>
-          <button class="btn-limpar" id="btn-limpar">Limpar</button>
-          <span class="filtro-info" id="filtro-info"></span>
+          <div class="card-metrica">
+            <div class="label">Sabores vendidos</div>
+            <div class="valor" id="dia-sabores">—</div>
+          </div>
         </div>
-      </div>
 
-      <!-- ÚLTIMAS VENDAS -->
-      <div class="card-tabela">
-        <table>
-          <thead>
-            <tr>
-              <th>Data</th>
-              <th>Sabor</th>
-              <th>Qtd</th>
-              <th>Preço unit.</th>
-              <th>Total</th>
-            </tr>
-          </thead>
-          <tbody id="tabela-vendas">
-            <tr><td colspan="5" class="vazio loading">Carregando...</td></tr>
-          </tbody>
-        </table>
-      </div>
+        <p class="secao-titulo">Este mês</p>
+        <div class="grid-metricas">
+          <div class="card-metrica">
+            <div class="label">Unidades vendidas</div>
+            <div class="valor" id="mes-unidades">—</div>
+            <div class="detalhe" id="mes-periodo"></div>
+          </div>
+          <div class="card-metrica">
+            <div class="label">Faturamento</div>
+            <div class="valor" id="mes-faturamento">—</div>
+          </div>
+          <div class="card-metrica">
+            <div class="label">Ticket médio por venda</div>
+            <div class="valor" id="mes-ticket">—</div>
+          </div>
+        </div>
 
-      <!-- CUSTO POR SABOR -->
-      <p class="secao-titulo">Custo de produção por sabor</p>
-      <div class="card-tabela">
-        <table>
-          <thead>
-            <tr>
-              <th>Sabor</th>
-              <th>Custo/fornada</th>
-              <th>Qtd produzida</th>
-              <th>Custo/unidade</th>
-              <th>Calculado em</th>
-            </tr>
-          </thead>
-          <tbody id="tabela-custos">
-            <tr><td colspan="5" class="vazio loading">Carregando...</td></tr>
-          </tbody>
-        </table>
-      </div>
+        <p class="secao-titulo">Ranking do mês — sabores mais vendidos</p>
+        <div class="card-tabela">
+          <ul class="lista-ranking" id="lista-ranking">
+            <li class="vazio loading">Carregando...</li>
+          </ul>
+        </div>
 
-    </div>
-  </div>
+        <p class="secao-titulo" id="titulo-vendas">Últimas vendas registradas</p>
+        <div class="card-filtro">
+          <div class="filtro-linha">
+            <div class="filtro-campo">
+              <label for="filtro-de">De</label>
+              <input type="date" id="filtro-de">
+            </div>
+            <div class="filtro-campo">
+              <label for="filtro-ate">Até</label>
+              <input type="date" id="filtro-ate">
+            </div>
+            <button class="btn-filtrar" id="btn-filtrar">Filtrar</button>
+            <button class="btn-limpar" id="btn-limpar">Limpar</button>
+            <span class="filtro-info" id="filtro-info"></span>
+          </div>
+        </div>
+        <div class="card-tabela">
+          <table>
+            <thead>
+              <tr>
+                <th>Data</th>
+                <th>Sabor</th>
+                <th>Qtd</th>
+                <th>Preço unit.</th>
+                <th>Total</th>
+              </tr>
+            </thead>
+            <tbody id="tabela-vendas">
+              <tr><td colspan="5" class="vazio loading">Carregando...</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <p class="secao-titulo">Custo de produção por sabor</p>
+        <div class="card-tabela">
+          <table>
+            <thead>
+              <tr>
+                <th>Sabor</th>
+                <th>Custo/fornada</th>
+                <th>Qtd produzida</th>
+                <th>Custo/unidade</th>
+                <th>Calculado em</th>
+              </tr>
+            </thead>
+            <tbody id="tabela-custos">
+              <tr><td colspan="5" class="vazio loading">Carregando...</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+      </div><!-- /pagina-painel -->
+
+      <!-- PÁGINA: COMPRAS DE ESTOQUE -->
+      <div class="conteudo" id="pagina-compras" style="display:none">
+
+        <p class="secao-titulo">Enviar Nota Fiscal</p>
+        <div class="card-upload">
+
+          <div id="estado-upload">
+            <div class="upload-area" id="upload-area">
+              <div class="upload-icone">📄</div>
+              <p class="upload-texto">Arraste a nota fiscal aqui ou <span class="upload-link" id="upload-link">clique para selecionar</span></p>
+              <p class="upload-sub">PDF, JPG ou PNG</p>
+              <input type="file" id="input-nota" accept=".pdf,.jpg,.jpeg,.png" style="display:none">
+            </div>
+          </div>
+
+          <div id="estado-processando" style="display:none">
+            <div class="estado-centro">
+              <div class="spinner"></div>
+              <p class="estado-texto">Agente contador analisando a nota fiscal...</p>
+              <p class="estado-sub">Isso pode levar alguns segundos</p>
+            </div>
+          </div>
+
+          <div id="estado-sucesso" style="display:none">
+            <div class="estado-centro">
+              <div class="estado-icone sucesso">✓</div>
+              <p class="estado-texto">Nota processada com sucesso!</p>
+              <div class="nota-resumo" id="nota-resumo"></div>
+              <button class="btn-nova-nota" id="btn-nova-nota">Enviar outra nota</button>
+            </div>
+          </div>
+
+          <div id="estado-erro" style="display:none">
+            <div class="estado-centro">
+              <div class="estado-icone erro">✕</div>
+              <p class="estado-texto">Não foi possível processar a nota</p>
+              <p class="estado-sub" id="msg-erro-upload"></p>
+              <button class="btn-nova-nota" id="btn-tentar-novamente">Tentar novamente</button>
+            </div>
+          </div>
+
+        </div><!-- /card-upload -->
+
+        <p class="secao-titulo">Total gasto por mês</p>
+        <div class="grid-metricas" id="grid-total-mes">
+          <div class="card-metrica"><div class="vazio loading">Carregando...</div></div>
+        </div>
+
+        <p class="secao-titulo">Compras registradas</p>
+        <div class="card-tabela">
+          <table>
+            <thead>
+              <tr>
+                <th>Data</th>
+                <th>Fornecedor</th>
+                <th>Nº Nota</th>
+                <th>Arquivo</th>
+                <th>Total</th>
+              </tr>
+            </thead>
+            <tbody id="tabela-compras">
+              <tr><td colspan="5" class="vazio loading">Carregando...</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+      </div><!-- /pagina-compras -->
+
+    </div><!-- /main-area -->
+  </div><!-- /tela-dashboard -->
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="app.js"></script>

@@ -26,24 +26,19 @@ function fimMes() {
   return fim.toISOString().split('T')[0]
 }
 
-// ── Filtro de datas ───────────────────────────────────────────────
-
-let filtroDataInicio = null
-let filtroDataFim    = null
-
 // ── Autenticação ──────────────────────────────────────────────────
 
-const telaLogin     = document.getElementById('tela-login')
-const telaDash      = document.getElementById('tela-dashboard')
-const formLogin     = document.getElementById('form-login')
-const msgErro       = document.getElementById('msg-erro')
-const btnEntrar     = document.getElementById('btn-entrar')
-const btnSair       = document.getElementById('btn-sair')
+const telaLogin = document.getElementById('tela-login')
+const telaDash  = document.getElementById('tela-dashboard')
+const formLogin = document.getElementById('form-login')
+const msgErro   = document.getElementById('msg-erro')
+const btnEntrar = document.getElementById('btn-entrar')
+const btnSair   = document.getElementById('btn-sair')
 
 sb.auth.onAuthStateChange((event, session) => {
   if (session) {
     telaLogin.style.display = 'none'
-    telaDash.style.display  = 'block'
+    telaDash.style.display  = 'flex'
     carregarDados()
   } else {
     telaLogin.style.display = 'flex'
@@ -53,9 +48,9 @@ sb.auth.onAuthStateChange((event, session) => {
 
 formLogin.addEventListener('submit', async e => {
   e.preventDefault()
-  msgErro.textContent    = ''
-  btnEntrar.textContent  = 'Entrando...'
-  btnEntrar.disabled     = true
+  msgErro.textContent   = ''
+  btnEntrar.textContent = 'Entrando...'
+  btnEntrar.disabled    = true
 
   const { error } = await sb.auth.signInWithPassword({
     email:    document.getElementById('email').value,
@@ -71,7 +66,53 @@ formLogin.addEventListener('submit', async e => {
 
 btnSair.addEventListener('click', () => sb.auth.signOut())
 
-// ── Filtro de vendas ──────────────────────────────────────────────
+// ── Navegação lateral ─────────────────────────────────────────────
+
+const sidebar       = document.getElementById('sidebar')
+const sidebarOverlay = document.getElementById('sidebar-overlay')
+const btnMenu       = document.getElementById('btn-menu')
+const topbarTitulo  = document.getElementById('topbar-titulo')
+
+const nomesPagina = {
+  painel:  'Painel',
+  compras: 'Compras de Estoque',
+}
+
+function navegarPara(nome) {
+  document.getElementById('pagina-painel').style.display  = nome === 'painel'  ? 'block' : 'none'
+  document.getElementById('pagina-compras').style.display = nome === 'compras' ? 'block' : 'none'
+
+  document.querySelectorAll('.sidebar-item').forEach(btn => {
+    btn.classList.toggle('ativo', btn.dataset.pagina === nome)
+  })
+
+  topbarTitulo.textContent = nomesPagina[nome]
+  fecharSidebar()
+
+  if (nome === 'compras') carregarPaginaCompras()
+}
+
+document.querySelectorAll('.sidebar-item').forEach(btn => {
+  btn.addEventListener('click', () => navegarPara(btn.dataset.pagina))
+})
+
+function fecharSidebar() {
+  sidebar.classList.remove('aberta')
+  sidebarOverlay.classList.remove('visivel')
+}
+
+btnMenu.addEventListener('click', () => {
+  const aberta = sidebar.classList.contains('aberta')
+  sidebar.classList.toggle('aberta', !aberta)
+  sidebarOverlay.classList.toggle('visivel', !aberta)
+})
+
+sidebarOverlay.addEventListener('click', fecharSidebar)
+
+// ── Filtro de datas ───────────────────────────────────────────────
+
+let filtroDataInicio = null
+let filtroDataFim    = null
 
 const inputFiltroDE  = document.getElementById('filtro-de')
 const inputFiltroAte = document.getElementById('filtro-ate')
@@ -80,24 +121,21 @@ const btnLimpar      = document.getElementById('btn-limpar')
 const filtroInfo     = document.getElementById('filtro-info')
 const tituloVendas   = document.getElementById('titulo-vendas')
 
-function aplicarFiltro() {
+btnFiltrar.addEventListener('click', () => {
   filtroDataInicio = inputFiltroDE.value  || null
   filtroDataFim    = inputFiltroAte.value || null
   carregarUltimasVendas()
-}
+})
 
-function limparFiltro() {
+btnLimpar.addEventListener('click', () => {
   inputFiltroDE.value  = ''
   inputFiltroAte.value = ''
   filtroDataInicio     = null
   filtroDataFim        = null
   carregarUltimasVendas()
-}
+})
 
-btnFiltrar.addEventListener('click', aplicarFiltro)
-btnLimpar.addEventListener('click', limparFiltro)
-
-// ── Dados do Dashboard ────────────────────────────────────────────
+// ── Dados do Painel ───────────────────────────────────────────────
 
 async function carregarDados() {
   await Promise.all([
@@ -115,9 +153,9 @@ async function carregarMetricasDia() {
     .select('quantidade, total, sabor')
     .eq('data', dataHoje)
 
-  const unidades   = data?.reduce((s, r) => s + r.quantidade, 0) ?? 0
+  const unidades    = data?.reduce((s, r) => s + r.quantidade, 0) ?? 0
   const faturamento = data?.reduce((s, r) => s + Number(r.total), 0) ?? 0
-  const sabores    = new Set(data?.map(r => r.sabor)).size
+  const sabores     = new Set(data?.map(r => r.sabor)).size
 
   document.getElementById('dia-unidades').textContent    = unidades
   document.getElementById('dia-faturamento').textContent = fmt.moeda(faturamento)
@@ -228,7 +266,6 @@ async function carregarCustos() {
     .select('sabor, custo_fornada, qtd_produzida, custo_unitario, calculado_em')
     .order('calculado_em', { ascending: false })
 
-  // Mantém apenas o cálculo mais recente por sabor
   const recentes = Object.values(
     (data ?? []).reduce((acc, r) => {
       if (!acc[r.sabor]) acc[r.sabor] = r
@@ -252,4 +289,156 @@ async function carregarCustos() {
       <td>${fmt.data(r.calculado_em.split('T')[0])}</td>
     </tr>
   `).join('')
+}
+
+// ── Compras de Estoque ────────────────────────────────────────────
+
+async function carregarPaginaCompras() {
+  await Promise.all([carregarTotalPorMes(), carregarCompras()])
+}
+
+async function carregarTotalPorMes() {
+  const { data } = await sb.from('compras_estoque')
+    .select('data_nota, total')
+    .order('data_nota', { ascending: false })
+
+  const grid = document.getElementById('grid-total-mes')
+
+  if (!data?.length) {
+    grid.innerHTML = '<div class="card-metrica"><div class="vazio">Nenhuma compra registrada ainda.</div></div>'
+    return
+  }
+
+  const porMes = {}
+  for (const r of data) {
+    const chave = r.data_nota.slice(0, 7)
+    if (!porMes[chave]) porMes[chave] = { total: 0, notas: 0 }
+    porMes[chave].total += Number(r.total)
+    porMes[chave].notas++
+  }
+
+  const meses = Object.entries(porMes)
+    .sort((a, b) => b[0].localeCompare(a[0]))
+    .slice(0, 6)
+
+  grid.innerHTML = meses.map(([chave, v]) => {
+    const [ano, mes] = chave.split('-').map(Number)
+    return `
+      <div class="card-metrica">
+        <div class="label">${fmt.mes(ano, mes)}</div>
+        <div class="valor">${fmt.moeda(v.total)}</div>
+        <div class="detalhe">${v.notas} nota${v.notas !== 1 ? 's' : ''} fiscal${v.notas !== 1 ? 'is' : ''}</div>
+      </div>
+    `
+  }).join('')
+}
+
+async function carregarCompras() {
+  const { data } = await sb.from('compras_estoque')
+    .select('data_nota, fornecedor, numero_nota, arquivo_nome, total')
+    .order('criado_em', { ascending: false })
+    .limit(20)
+
+  const tbody = document.getElementById('tabela-compras')
+
+  if (!data?.length) {
+    tbody.innerHTML = '<tr><td colspan="5" class="vazio">Nenhuma compra registrada ainda. Envie uma nota fiscal acima.</td></tr>'
+    return
+  }
+
+  tbody.innerHTML = data.map(r => `
+    <tr>
+      <td>${fmt.data(r.data_nota)}</td>
+      <td><strong>${r.fornecedor}</strong></td>
+      <td>${r.numero_nota ?? '—'}</td>
+      <td><span class="badge-sabor">${r.arquivo_nome ?? '—'}</span></td>
+      <td><strong>${fmt.moeda(r.total)}</strong></td>
+    </tr>
+  `).join('')
+}
+
+// ── Upload de Nota Fiscal ─────────────────────────────────────────
+
+const uploadArea      = document.getElementById('upload-area')
+const inputNota       = document.getElementById('input-nota')
+const estadoUpload    = document.getElementById('estado-upload')
+const estadoProc      = document.getElementById('estado-processando')
+const estadoSucesso   = document.getElementById('estado-sucesso')
+const estadoErro      = document.getElementById('estado-erro')
+const notaResumo      = document.getElementById('nota-resumo')
+const msgErroUpload   = document.getElementById('msg-erro-upload')
+
+document.getElementById('upload-link').addEventListener('click', e => {
+  e.stopPropagation()
+  inputNota.click()
+})
+
+uploadArea.addEventListener('click', () => inputNota.click())
+
+inputNota.addEventListener('change', () => {
+  if (inputNota.files[0]) processarNota(inputNota.files[0])
+})
+
+uploadArea.addEventListener('dragover', e => {
+  e.preventDefault()
+  uploadArea.classList.add('arrastando')
+})
+
+uploadArea.addEventListener('dragleave', () => uploadArea.classList.remove('arrastando'))
+
+uploadArea.addEventListener('drop', e => {
+  e.preventDefault()
+  uploadArea.classList.remove('arrastando')
+  if (e.dataTransfer.files[0]) processarNota(e.dataTransfer.files[0])
+})
+
+document.getElementById('btn-nova-nota').addEventListener('click', resetarUpload)
+document.getElementById('btn-tentar-novamente').addEventListener('click', resetarUpload)
+
+function mostrarEstado(nome) {
+  estadoUpload.style.display  = nome === 'upload'      ? '' : 'none'
+  estadoProc.style.display    = nome === 'processando' ? '' : 'none'
+  estadoSucesso.style.display = nome === 'sucesso'     ? '' : 'none'
+  estadoErro.style.display    = nome === 'erro'        ? '' : 'none'
+}
+
+function resetarUpload() {
+  inputNota.value = ''
+  mostrarEstado('upload')
+}
+
+async function processarNota(file) {
+  mostrarEstado('processando')
+
+  try {
+    const { data: sessionData } = await sb.auth.getSession()
+    const token = sessionData.session?.access_token
+    if (!token) throw new Error('Sessão expirada. Faça login novamente.')
+
+    const form = new FormData()
+    form.append('file', file)
+
+    const resp = await fetch(`${SUPABASE_URL}/functions/v1/processar-nota`, {
+      method:  'POST',
+      headers: { Authorization: `Bearer ${token}` },
+      body:    form,
+    })
+
+    const json = await resp.json()
+    if (!resp.ok || json.error) throw new Error(json.error ?? 'Erro ao processar a nota fiscal.')
+
+    const d = json.data
+    notaResumo.innerHTML = `
+      <div><strong>Fornecedor:</strong> ${d.fornecedor}</div>
+      <div><strong>Data:</strong> ${fmt.data(d.data_nota)}</div>
+      ${d.numero_nota ? `<div><strong>Nº Nota:</strong> ${d.numero_nota}</div>` : ''}
+      <div><strong>Total:</strong> ${fmt.moeda(d.total)}</div>
+    `
+    mostrarEstado('sucesso')
+
+    await Promise.all([carregarTotalPorMes(), carregarCompras()])
+  } catch (err) {
+    msgErroUpload.textContent = err.message
+    mostrarEstado('erro')
+  }
 }
