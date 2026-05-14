@@ -86,8 +86,25 @@
         </ul>
       </div>
 
+      <!-- FILTRO DE DATAS -->
+      <p class="secao-titulo" id="titulo-vendas">Últimas vendas registradas</p>
+      <div class="card-filtro">
+        <div class="filtro-linha">
+          <div class="filtro-campo">
+            <label for="filtro-de">De</label>
+            <input type="date" id="filtro-de">
+          </div>
+          <div class="filtro-campo">
+            <label for="filtro-ate">Até</label>
+            <input type="date" id="filtro-ate">
+          </div>
+          <button class="btn-filtrar" id="btn-filtrar">Filtrar</button>
+          <button class="btn-limpar" id="btn-limpar">Limpar</button>
+          <span class="filtro-info" id="filtro-info"></span>
+        </div>
+      </div>
+
       <!-- ÚLTIMAS VENDAS -->
-      <p class="secao-titulo">Últimas vendas registradas</p>
       <div class="card-tabela">
         <table>
           <thead>

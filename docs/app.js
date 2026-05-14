@@ -26,6 +26,11 @@ function fimMes() {
   return fim.toISOString().split('T')[0]
 }
 
+// ── Filtro de datas ───────────────────────────────────────────────
+
+let filtroDataInicio = null
+let filtroDataFim    = null
+
 // ── Autenticação ──────────────────────────────────────────────────
 
 const telaLogin     = document.getElementById('tela-login')
@@ -65,6 +70,32 @@ formLogin.addEventListener('submit', async e => {
 })
 
 btnSair.addEventListener('click', () => sb.auth.signOut())
+
+// ── Filtro de vendas ──────────────────────────────────────────────
+
+const inputFiltroDE  = document.getElementById('filtro-de')
+const inputFiltroAte = document.getElementById('filtro-ate')
+const btnFiltrar     = document.getElementById('btn-filtrar')
+const btnLimpar      = document.getElementById('btn-limpar')
+const filtroInfo     = document.getElementById('filtro-info')
+const tituloVendas   = document.getElementById('titulo-vendas')
+
+function aplicarFiltro() {
+  filtroDataInicio = inputFiltroDE.value  || null
+  filtroDataFim    = inputFiltroAte.value || null
+  carregarUltimasVendas()
+}
+
+function limparFiltro() {
+  inputFiltroDE.value  = ''
+  inputFiltroAte.value = ''
+  filtroDataInicio     = null
+  filtroDataFim        = null
+  carregarUltimasVendas()
+}
+
+btnFiltrar.addEventListener('click', aplicarFiltro)
+btnLimpar.addEventListener('click', limparFiltro)
 
 // ── Dados do Dashboard ────────────────────────────────────────────
 
@@ -147,15 +178,37 @@ async function carregarRanking() {
 }
 
 async function carregarUltimasVendas() {
-  const { data } = await sb.from('vendas')
+  const tbody = document.getElementById('tabela-vendas')
+  tbody.innerHTML = '<tr><td colspan="5" class="vazio loading">Carregando...</td></tr>'
+
+  const filtroAtivo = filtroDataInicio || filtroDataFim
+
+  let query = sb.from('vendas')
     .select('data, sabor, quantidade, preco_unitario, total')
     .order('criado_em', { ascending: false })
-    .limit(15)
 
-  const tbody = document.getElementById('tabela-vendas')
+  if (filtroDataInicio) query = query.gte('data', filtroDataInicio)
+  if (filtroDataFim)    query = query.lte('data', filtroDataFim)
+  if (!filtroAtivo)     query = query.limit(15)
+
+  const { data } = await query
+
+  if (filtroAtivo) {
+    const partes = []
+    if (filtroDataInicio) partes.push(`de ${fmt.data(filtroDataInicio)}`)
+    if (filtroDataFim)    partes.push(`até ${fmt.data(filtroDataFim)}`)
+    tituloVendas.textContent = `Vendas ${partes.join(' ')}`
+    filtroInfo.textContent   = `${data?.length ?? 0} registro${(data?.length ?? 0) !== 1 ? 's' : ''} encontrado${(data?.length ?? 0) !== 1 ? 's' : ''}`
+    btnLimpar.classList.add('visivel')
+  } else {
+    tituloVendas.textContent = 'Últimas vendas registradas'
+    filtroInfo.textContent   = ''
+    btnLimpar.classList.remove('visivel')
+  }
 
   if (!data?.length) {
-    tbody.innerHTML = '<tr><td colspan="5" class="vazio">Nenhuma venda registrada ainda.</td></tr>'
+    const msg = filtroAtivo ? 'Nenhuma venda encontrada para o período selecionado.' : 'Nenhuma venda registrada ainda.'
+    tbody.innerHTML = `<tr><td colspan="5" class="vazio">${msg}</td></tr>`
     return
   }
 
