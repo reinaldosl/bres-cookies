@@ -303,6 +303,90 @@ body {
   font-size: .95rem;
 }
 
+/* ── FILTRO DE DATAS ────────────────────────────────── */
+.card-filtro {
+  background: var(--branco);
+  border-radius: var(--radius);
+  box-shadow: var(--sombra);
+  padding: 16px 20px;
+  margin-top: 12px;
+}
+
+.filtro-linha {
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.filtro-campo {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.filtro-campo label {
+  font-size: .72rem;
+  font-weight: 700;
+  color: var(--texto-suave);
+  text-transform: uppercase;
+  letter-spacing: .04em;
+}
+
+.filtro-campo input[type="date"] {
+  padding: 9px 12px;
+  border: 1.5px solid var(--bege-escuro);
+  border-radius: 8px;
+  font-size: .9rem;
+  font-family: inherit;
+  color: var(--texto);
+  background: var(--creme);
+  transition: border-color .2s;
+  outline: none;
+}
+
+.filtro-campo input[type="date"]:focus { border-color: var(--caramelo); }
+
+.btn-filtrar {
+  padding: 9px 20px;
+  background: var(--marrom);
+  color: var(--branco);
+  border: none;
+  border-radius: 8px;
+  font-size: .9rem;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background .2s;
+}
+
+.btn-filtrar:hover { background: var(--marrom-claro); }
+
+.btn-limpar {
+  display: none;
+  padding: 9px 16px;
+  background: transparent;
+  color: var(--texto-suave);
+  border: 1.5px solid var(--bege-escuro);
+  border-radius: 8px;
+  font-size: .9rem;
+  font-weight: 500;
+  font-family: inherit;
+  cursor: pointer;
+  transition: border-color .2s, color .2s;
+}
+
+.btn-limpar.visivel { display: inline-block; }
+.btn-limpar:hover { border-color: var(--caramelo); color: var(--marrom); }
+
+.filtro-info {
+  font-size: .82rem;
+  color: var(--texto-suave);
+  margin-left: auto;
+  align-self: flex-end;
+  padding-bottom: 2px;
+}
+
 /* ── LOADING ────────────────────────────────────────── */
 .loading {
   text-align: center;
