@@ -38,7 +38,7 @@ const btnSair   = document.getElementById('btn-sair')
 sb.auth.onAuthStateChange((event, session) => {
   if (session) {
     telaLogin.style.display = 'none'
-    telaDash.style.display  = 'flex'
+    telaDash.style.display  = 'block'
     carregarDados()
   } else {
     telaLogin.style.display = 'flex'
