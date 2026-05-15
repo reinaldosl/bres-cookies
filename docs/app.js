@@ -38,7 +38,7 @@ const btnSair   = document.getElementById('btn-sair')
 sb.auth.onAuthStateChange((event, session) => {
   if (session) {
     telaLogin.style.display = 'none'
-    telaDash.style.display  = 'flex'
+    telaDash.style.display  = 'block'
     carregarDados()
   } else {
     telaLogin.style.display = 'flex'
@@ -76,11 +76,13 @@ const topbarTitulo  = document.getElementById('topbar-titulo')
 const nomesPagina = {
   painel:  'Painel',
   compras: 'Compras de Estoque',
+  vendas:  'Vendas',
 }
 
 function navegarPara(nome) {
   document.getElementById('pagina-painel').style.display  = nome === 'painel'  ? 'block' : 'none'
   document.getElementById('pagina-compras').style.display = nome === 'compras' ? 'block' : 'none'
+  document.getElementById('pagina-vendas').style.display  = nome === 'vendas'  ? 'block' : 'none'
 
   document.querySelectorAll('.sidebar-item').forEach(btn => {
     btn.classList.toggle('ativo', btn.dataset.pagina === nome)
@@ -90,6 +92,7 @@ function navegarPara(nome) {
   fecharSidebar()
 
   if (nome === 'compras') carregarPaginaCompras()
+  if (nome === 'vendas')  carregarPaginaVendas()
 }
 
 document.querySelectorAll('.sidebar-item').forEach(btn => {
@@ -442,3 +445,209 @@ async function processarNota(file) {
     mostrarEstado('erro')
   }
 }
+
+// ── CRUD de Vendas ────────────────────────────────────────────────
+
+const vendasMap = {}         // id → venda object para acesso nos botões inline
+let   vendaEditando = null   // objeto da venda em edição (null = nova)
+let   idExcluindo   = null   // id da venda a excluir
+
+// ── Página ────────────────────────────────────────────
+
+async function carregarPaginaVendas() {
+  await Promise.all([carregarVendasCrud(), carregarSaboresLista()])
+}
+
+async function carregarVendasCrud() {
+  const tbody = document.getElementById('tabela-vendas-crud')
+  tbody.innerHTML = '<tr><td colspan="6" class="vazio loading">Carregando...</td></tr>'
+
+  const { data, error } = await sb.from('vendas')
+    .select('id, data, sabor, quantidade, preco_unitario, total')
+    .order('data',      { ascending: false })
+    .order('criado_em', { ascending: false })
+
+  if (error) {
+    tbody.innerHTML = `<tr><td colspan="6" class="vazio">Erro ao carregar: ${error.message}</td></tr>`
+    return
+  }
+
+  const contagem = document.getElementById('vendas-contagem')
+  contagem.textContent = data?.length ? `${data.length} registro${data.length !== 1 ? 's' : ''}` : ''
+
+  if (!data?.length) {
+    tbody.innerHTML = '<tr><td colspan="6" class="vazio">Nenhuma venda registrada. Clique em "+ Nova Venda" para começar.</td></tr>'
+    return
+  }
+
+  data.forEach(r => { vendasMap[r.id] = r })
+
+  tbody.innerHTML = data.map(r => `
+    <tr>
+      <td>${fmt.data(r.data)}</td>
+      <td><span class="badge-sabor">${r.sabor}</span></td>
+      <td>${r.quantidade}</td>
+      <td>${fmt.moeda(r.preco_unitario)}</td>
+      <td><strong>${fmt.moeda(r.total)}</strong></td>
+      <td class="col-acoes">
+        <button class="btn-icone editar"  title="Editar"  onclick="abrirEdicaoVenda(vendasMap[${r.id}])">✏️</button>
+        <button class="btn-icone excluir" title="Excluir" onclick="confirmarExclusaoVenda(${r.id})">🗑️</button>
+      </td>
+    </tr>
+  `).join('')
+}
+
+async function carregarSaboresLista() {
+  const { data } = await sb.from('vendas').select('sabor')
+  const unicos = [...new Set(data?.map(r => r.sabor) ?? [])]
+  document.getElementById('lista-sabores').innerHTML = unicos.map(s => `<option value="${s}">`).join('')
+}
+
+// ── Modal helpers ─────────────────────────────────────
+
+function abrirModal(id) {
+  document.getElementById(id).classList.add('aberto')
+  document.body.style.overflow = 'hidden'
+}
+
+function fecharModal(id) {
+  document.getElementById(id).classList.remove('aberto')
+  document.body.style.overflow = ''
+}
+
+document.querySelectorAll('.modal-overlay').forEach(overlay => {
+  overlay.addEventListener('click', e => {
+    if (e.target === overlay) fecharModal(overlay.id)
+  })
+})
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') {
+    fecharModal('modal-venda')
+    fecharModal('modal-excluir')
+  }
+})
+
+// ── Formulário criar / editar ─────────────────────────
+
+const vData  = document.getElementById('v-data')
+const vSabor = document.getElementById('v-sabor')
+const vQtd   = document.getElementById('v-quantidade')
+const vPreco = document.getElementById('v-preco')
+
+function calcularTotal() {
+  const qty   = parseFloat(vQtd.value)   || 0
+  const price = parseFloat(vPreco.value) || 0
+  document.getElementById('v-total-preview').textContent = fmt.moeda(qty * price)
+}
+
+vQtd.addEventListener('input',   calcularTotal)
+vPreco.addEventListener('input',  calcularTotal)
+
+function abrirNovaVenda() {
+  vendaEditando = null
+  document.getElementById('modal-venda-titulo').textContent = 'Nova Venda'
+  document.getElementById('form-venda').reset()
+  document.getElementById('form-venda-erro').textContent = ''
+  vData.value = hoje()
+  calcularTotal()
+  carregarSaboresLista()
+  abrirModal('modal-venda')
+  setTimeout(() => vSabor.focus(), 150)
+}
+
+function abrirEdicaoVenda(venda) {
+  vendaEditando = venda
+  document.getElementById('modal-venda-titulo').textContent = 'Editar Venda'
+  document.getElementById('form-venda-erro').textContent = ''
+  vData.value  = venda.data
+  vSabor.value = venda.sabor
+  vQtd.value   = venda.quantidade
+  vPreco.value = venda.preco_unitario
+  calcularTotal()
+  abrirModal('modal-venda')
+}
+
+document.getElementById('btn-nova-venda').addEventListener('click', abrirNovaVenda)
+document.getElementById('btn-fechar-modal-venda').addEventListener('click', () => fecharModal('modal-venda'))
+document.getElementById('btn-cancelar-venda').addEventListener('click',     () => fecharModal('modal-venda'))
+
+document.getElementById('form-venda').addEventListener('submit', async e => {
+  e.preventDefault()
+
+  const erroEl = document.getElementById('form-venda-erro')
+  erroEl.textContent = ''
+
+  const sabor = vSabor.value.trim()
+  const qty   = parseInt(vQtd.value)
+  const price = parseFloat(vPreco.value)
+
+  if (!sabor)           { erroEl.textContent = 'Informe o sabor.';          return }
+  if (!qty   || qty < 1){ erroEl.textContent = 'Quantidade mínima é 1.';    return }
+  if (!price || price < 0){ erroEl.textContent = 'Preço inválido.';         return }
+
+  const btn = document.getElementById('btn-salvar-venda')
+  btn.textContent = 'Salvando...'
+  btn.disabled    = true
+
+  const payload = {
+    data:           vData.value,
+    sabor,
+    quantidade:     qty,
+    preco_unitario: price,
+    total:          qty * price,
+  }
+
+  const { error } = vendaEditando
+    ? await sb.from('vendas').update(payload).eq('id', vendaEditando.id)
+    : await sb.from('vendas').insert(payload)
+
+  btn.textContent = 'Salvar'
+  btn.disabled    = false
+
+  if (error) {
+    erroEl.textContent = 'Erro ao salvar: ' + error.message
+    return
+  }
+
+  fecharModal('modal-venda')
+  carregarVendasCrud()
+  carregarSaboresLista()
+  carregarDados() // atualiza métricas do Painel em background
+})
+
+// ── Exclusão ──────────────────────────────────────────
+
+function confirmarExclusaoVenda(id) {
+  idExcluindo = id
+  const v = vendasMap[id]
+  document.getElementById('excluir-resumo').innerHTML = v ? `
+    <div><strong>Data:</strong> ${fmt.data(v.data)}</div>
+    <div><strong>Sabor:</strong> ${v.sabor}</div>
+    <div><strong>Total:</strong> ${fmt.moeda(v.total)}</div>
+  ` : ''
+  abrirModal('modal-excluir')
+}
+
+document.getElementById('btn-cancelar-excluir').addEventListener('click', () => fecharModal('modal-excluir'))
+
+document.getElementById('btn-confirmar-excluir').addEventListener('click', async () => {
+  const btn = document.getElementById('btn-confirmar-excluir')
+  btn.textContent = 'Excluindo...'
+  btn.disabled    = true
+
+  const { error } = await sb.from('vendas').delete().eq('id', idExcluindo)
+
+  btn.textContent = 'Excluir'
+  btn.disabled    = false
+  idExcluindo     = null
+
+  if (error) {
+    alert('Erro ao excluir: ' + error.message)
+    return
+  }
+
+  fecharModal('modal-excluir')
+  carregarVendasCrud()
+  carregarDados() // atualiza métricas do Painel em background
+})
