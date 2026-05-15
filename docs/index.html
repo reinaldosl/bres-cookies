@@ -45,6 +45,10 @@
           <span class="sidebar-icone">🛒</span>
           <span>Compras de Estoque</span>
         </button>
+        <button class="sidebar-item" data-pagina="vendas">
+          <span class="sidebar-icone">🧾</span>
+          <span>Vendas</span>
+        </button>
       </nav>
     </aside>
     <div class="sidebar-overlay" id="sidebar-overlay"></div>
@@ -223,7 +227,98 @@
 
       </div><!-- /pagina-compras -->
 
+      <!-- PÁGINA: VENDAS (CRUD) -->
+      <div class="conteudo" id="pagina-vendas" style="display:none">
+
+        <div class="pagina-header">
+          <div>
+            <p class="secao-titulo" style="margin-top:0;margin-bottom:2px">Vendas</p>
+            <span class="pagina-contagem" id="vendas-contagem"></span>
+          </div>
+          <button class="btn-primario" id="btn-nova-venda">+ Nova Venda</button>
+        </div>
+
+        <div class="card-tabela" style="margin-top:12px">
+          <table>
+            <thead>
+              <tr>
+                <th>Data</th>
+                <th>Sabor</th>
+                <th>Qtd</th>
+                <th>Preço unit.</th>
+                <th>Total</th>
+                <th class="col-acoes"></th>
+              </tr>
+            </thead>
+            <tbody id="tabela-vendas-crud">
+              <tr><td colspan="6" class="vazio loading">Carregando...</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+      </div><!-- /pagina-vendas -->
+
     </div><!-- /main-area -->
+
+    <!-- MODAL: CRIAR / EDITAR VENDA -->
+    <div class="modal-overlay" id="modal-venda">
+      <div class="modal">
+        <div class="modal-cabecalho">
+          <h2 class="modal-titulo" id="modal-venda-titulo">Nova Venda</h2>
+          <button class="modal-fechar" id="btn-fechar-modal-venda" type="button">✕</button>
+        </div>
+        <form id="form-venda" novalidate>
+          <div class="modal-corpo">
+            <div class="campo">
+              <label for="v-data">Data</label>
+              <input type="date" id="v-data" required>
+            </div>
+            <div class="campo">
+              <label for="v-sabor">Sabor</label>
+              <input type="text" id="v-sabor" list="lista-sabores"
+                     placeholder="Ex: Chocolate" required autocomplete="off">
+              <datalist id="lista-sabores"></datalist>
+            </div>
+            <div class="campo-duplo">
+              <div class="campo">
+                <label for="v-quantidade">Quantidade</label>
+                <input type="number" id="v-quantidade" min="1" step="1" placeholder="0" required>
+              </div>
+              <div class="campo">
+                <label for="v-preco">Preço unitário (R$)</label>
+                <input type="number" id="v-preco" min="0" step="0.01" placeholder="0,00" required>
+              </div>
+            </div>
+            <div class="total-preview">
+              <span>Total calculado</span>
+              <strong id="v-total-preview">R$ 0,00</strong>
+            </div>
+            <p class="form-erro" id="form-venda-erro"></p>
+          </div>
+          <div class="modal-rodape">
+            <button type="button" class="btn-secundario" id="btn-cancelar-venda">Cancelar</button>
+            <button type="submit"  class="btn-primario"   id="btn-salvar-venda">Salvar</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- MODAL: CONFIRMAR EXCLUSÃO -->
+    <div class="modal-overlay" id="modal-excluir">
+      <div class="modal modal-sm">
+        <div class="modal-cabecalho">
+          <h2 class="modal-titulo">Excluir venda?</h2>
+        </div>
+        <div class="modal-corpo">
+          <p class="modal-descricao">Esta ação não pode ser desfeita.</p>
+          <div class="excluir-resumo" id="excluir-resumo"></div>
+        </div>
+        <div class="modal-rodape">
+          <button class="btn-secundario" id="btn-cancelar-excluir" type="button">Cancelar</button>
+          <button class="btn-perigo"     id="btn-confirmar-excluir" type="button">Excluir</button>
+        </div>
+      </div>
+    </div>
   </div><!-- /tela-dashboard -->
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
